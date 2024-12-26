@@ -1,0 +1,53 @@
+version: '3.8'
+name: wp-mysql-stack
+
+services:
+  wordpress:
+    image: wordpress:5.8
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wppass123
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wordpress_data:/var/www/html
+      - ./wp-setup:/docker-entrypoint-initwp.d
+    networks:
+      - wp_network
+    configs:
+      - source: wp_php_conf
+        target: /usr/local/etc/php/conf.d/custom-php.ini
+
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: wppass123
+      MYSQL_ROOT_PASSWORD: rootpass123
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - wp_network
+
+networks:
+  wp_network:
+    driver: bridge
+
+volumes:
+  wordpress_data:
+    driver: local
+  db_data:
+    driver: local
+
+configs:
+  wp_php_conf:
+    file: ./php.ini
+
