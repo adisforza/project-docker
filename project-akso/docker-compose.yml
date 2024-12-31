@@ -1,8 +1,8 @@
-version: '3.8'
-name: wp-mysql-stack
+version: '3.8'  # Compose file format version
+name: wp-mysql-stack-enhanced  # Name of the Docker stack
 
 services:
-  wordpress:
+  wordpress:  # WordPress Service
     image: wordpress:5.8
     restart: always
     depends_on:
@@ -22,8 +22,13 @@ services:
     configs:
       - source: wp_php_conf
         target: /usr/local/etc/php/conf.d/custom-php.ini
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
-  db:
+  db:  # MySQL Database Service
     image: mysql:8.0
     restart: always
     environment:
@@ -36,18 +41,56 @@ services:
       - ./mysql/init:/docker-entrypoint-initdb.d
     networks:
       - wp_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  phpmyadmin:  # phpMyAdmin Service
+    image: phpmyadmin:latest
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: wpuser
+      PMA_PASSWORD: wppass123
+    depends_on:
+      - db
+    networks:
+      - wp_network
+
+  redis:  # Redis Caching Service
+    image: redis:latest
+    restart: always
+    command: ["redis-server", "--requirepass", "redispassword"]
+    ports:
+      - "6379:6379"
+    networks:
+      - wp_network
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
-  wp_network:
+  wp_network:  # Custom Network
     driver: bridge
 
 volumes:
-  wordpress_data:
+  wordpress_data:  # Persistent Volume for WordPress Files
     driver: local
-  db_data:
+  db_data:  # Persistent Volume for MySQL Data
     driver: local
 
 configs:
-  wp_php_conf:
+  wp_php_conf:  # PHP Custom Configuration
     file: ./php.ini
 
