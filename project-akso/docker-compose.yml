@@ -1,8 +1,8 @@
-version: '3.8'  # Compose file format version
-name: wp-mysql-stack-enhanced  # Name of the Docker stack
+version: '3.8'  
+name: wp-mysql-stack-enhanced  
 
 services:
-  wordpress:  # WordPress Service
+  wordpress:  
     image: wordpress:5.8
     restart: always
     depends_on:
@@ -28,7 +28,7 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  db:  # MySQL Database Service
+  db:  
     image: mysql:8.0
     restart: always
     environment:
@@ -52,7 +52,7 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  phpmyadmin:  # phpMyAdmin Service
+  phpmyadmin: 
     image: phpmyadmin:latest
     restart: always
     ports:
@@ -66,7 +66,7 @@ services:
     networks:
       - wp_network
 
-  redis:  # Redis Caching Service
+  redis:  
     image: redis:latest
     restart: always
     command: ["redis-server", "--requirepass", "redispassword"]
@@ -81,16 +81,16 @@ services:
         max-file: "3"
 
 networks:
-  wp_network:  # Custom Network
+  wp_network:  
     driver: bridge
 
 volumes:
-  wordpress_data:  # Persistent Volume for WordPress Files
+  wordpress_data:  
     driver: local
-  db_data:  # Persistent Volume for MySQL Data
+  db_data:  
     driver: local
 
 configs:
-  wp_php_conf:  # PHP Custom Configuration
+  wp_php_conf:  
     file: ./php.ini
 
